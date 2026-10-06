@@ -45,8 +45,8 @@ int main(){
 }
 
 void mode0(){
-    std::ifstream in("testeula.ula");
-    std::ofstream out("testeula.hex");
+    std::ifstream in("data/testeula.ula");
+    std::ofstream out("data/testeula.hex");
     int cont = 0;
     int x, y, w, fimLinha;
     std::string valor;
@@ -87,8 +87,8 @@ void mode0(){
 }
 
 void mode1(){
-    std::ifstream in("testeula.ula");
-    std::ofstream out("testeula.hex");
+    std::ifstream in("data/testeula.ula");
+    std::ofstream out("data/testeula.hex");
     int cont = 0;
     int x, y, w, fimLinha;
     std::string valor;

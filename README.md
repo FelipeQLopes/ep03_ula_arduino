@@ -62,3 +62,15 @@ No Arduino (Blocos 2, 3 e 4), a equipe pode programar suas partes em paralelo cr
 2. **Segunda Integração (O "Casamento" Final):**
    * Com o Arduino testado e validado, une-se o **Bloco 1 (Software do PC)** com o sistema da placa.
    * O fluxo completo acontecerá: O C++ enviará os dados convertidos pela porta serial, o Arduino (Bloco 2) lerá essa comunicação e preencherá a memória, permitindo que a ULA (Bloco 3) execute o programa oficial com o feedback do DUMP (Bloco 4).
+
+## Compilar e executar o software do PC
+
+Na pasta `Software`, use:
+
+```sh
+make
+make run
+```
+
+O primeiro comando compila; o segundo executa. Os arquivos `.ula` e `.hex`
+ficam em `Software/data/`.
