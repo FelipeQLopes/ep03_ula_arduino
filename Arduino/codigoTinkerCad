@@ -1,5 +1,5 @@
 // C++ code
-//
+// https://www.tinkercad.com/things/fXMF9UMKHEZ-ep03?sharecode=1m2xBljF8tT2y-Bz7ad8Bke6FhBQJW9C2Jhx6jZ3l2k
 
 String entrada;
 int pin_f3 = 13;
