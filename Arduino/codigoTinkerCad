@@ -1,0 +1,175 @@
+// C++ code
+//
+
+String entrada;
+int pin_f3 = 13;
+int pin_f2 = 12;
+int pin_f1 = 11;
+int pin_f0 = 10;
+String memoria[100];
+int cont = 4;
+bool iniciar;
+
+void carregarEntradas();
+void printVetor();
+int calcularInstrucao(char x, char y, char w);
+int conversaoCharInt(char c);
+char conversaoIntChar(int i);
+
+
+void setup()
+{
+  memoria[0] = cont;
+  memoria[1] = memoria[2] = memoria[3] = "0";
+  iniciar = false;
+
+  Serial.begin (9600);
+  pinMode(pin_f3, OUTPUT);
+  pinMode(pin_f2, OUTPUT);
+  pinMode(pin_f1, OUTPUT);
+  pinMode(pin_f0, OUTPUT);
+}
+
+void loop()
+{
+  if(cont == 4){
+    if(Serial.available() > 0){
+      carregarEntradas();
+      printVetor();
+
+      Serial.println("Digite S para iniciar o programa:");
+      while(Serial.available() == 0){
+      }
+
+      char confirmacao = Serial.read();
+
+      if(confirmacao == 'S' || confirmacao == 's'){
+        iniciar = true;
+        Serial.println("Programa iniciado!");
+      }else{
+        return;
+      }
+    }
+  }else if(iniciar && cont > memoria[0].toInt()){
+    
+    String instrucao = memoria[memoria[0].toInt()];
+    
+    char x = instrucao.charAt(0);
+    char y = instrucao.charAt(1);
+    char w = instrucao.charAt(2);
+    
+    memoria[2] = x;
+    memoria[3] = y;
+    
+    int s = calcularInstrucao(x, y, w);
+    memoria[1] = conversaoIntChar(s & 0x0F);
+    
+    printVetor();
+    
+    digitalWrite(pin_f3,(s >> 3) & 1);
+    digitalWrite(pin_f2,(s >> 2) & 1);
+    digitalWrite(pin_f1,(s >> 1) & 1);
+    digitalWrite(pin_f0,(s >> 0) & 1);
+    
+    delay(4000);
+    
+    memoria[0] = String(memoria[0].toInt() + 1);
+  }
+}
+
+void carregarEntradas(){
+  while(Serial.available() > 0){
+    entrada = Serial.readStringUntil(' ');
+    memoria[cont++] = entrada;
+    delay(1);
+  }
+}
+
+void printVetor(){
+  Serial.print("->|");
+  for(int i = 0; i < cont; i++){
+    Serial.print(memoria[i]);
+    Serial.print("|");
+  }
+  Serial.print("\n");
+  delay(1);
+}
+  
+int calcularInstrucao(char x, char y, char w){
+  int xInt = conversaoCharInt(x) & 0x0F;
+  int yInt = conversaoCharInt(y) & 0x0F;
+  int sInt;
+
+  switch(w){
+    case '0':
+      sInt = ~xInt;
+      break;
+    case '1':
+      sInt = ~(xInt | yInt);
+      break;
+    case '2':
+      sInt = ~xInt & yInt;
+      break;
+    case '3':
+      sInt = 0;
+      break;
+    case '4':
+      sInt = ~(xInt & yInt);
+      break;
+    case '5':
+      sInt = ~yInt;
+      break;
+    case '6':
+      sInt = (~xInt | yInt) & (xInt | ~yInt);
+      break;
+    case '7':
+      sInt = xInt & ~yInt;
+      break;
+    case '8':
+      sInt = ~xInt | yInt;
+      break;
+    case '9':
+      sInt = (xInt & yInt) | (~xInt | ~yInt);
+      break;
+    case 'A':
+      sInt = yInt;
+      break;
+    case 'B':
+      sInt = xInt & yInt;
+      break;
+    case 'C':
+      sInt = 15;
+      break;
+    case 'D':
+      sInt = xInt | ~yInt;
+      break;
+    case 'E':
+      sInt = xInt | yInt;
+      break;
+    case 'F':
+      sInt = xInt;
+      break;
+  }
+
+  return sInt & 0x0F;
+}
+
+int conversaoCharInt(char c){
+  int cInt = (int)c;
+  if(cInt >= 65){
+    cInt -= 55;
+  }else{
+    cInt -= 48;
+  }
+  return cInt;
+}
+
+char conversaoIntChar(int i){
+  char c;
+  if(i >= 10){
+    c = 55 + i;
+  }else{
+    c = 48 + i;
+  }
+  return c;
+}
