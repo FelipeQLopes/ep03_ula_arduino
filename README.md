@@ -1,6 +1,6 @@
 # ULA de 4 bits com Arduino (Exercício Prático 03)
 
-Implementação de uma **Unidade Lógica e Aritmética (ULA) de 4 bits** simulada em um Arduino, controlada por um programa no PC. Projeto acadêmico de Ciência da Computação (disciplina de Arquitetura de Computadores).
+Implementação de uma **Unidade Lógica e Aritmética (ULA) de 4 bits** simulada em um Arduino, controlada por um programa no PC. Projeto acadêmico de Ciência da Computação (disciplina de Arquitetura de Computadores II).
 
 O sistema é dividido em duas partes que conversam entre si:
 
