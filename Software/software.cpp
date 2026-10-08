@@ -5,22 +5,22 @@
 
 std::unordered_map<std::string, int> operacao = 
     {   
-        {"nA"    ,  1},
-        {"AoBn"  ,  2},
-        {"nAeB"  ,  3},
-        {"zeroL" ,  4},
-        {"AeBn"  ,  5},
-        {"nB"    ,  6},
-        {"AxB"   ,  7},
-        {"AenB"  ,  8},
-        {"nAoB"  ,  9},
-        {"AxBn"  , 10},
-        {"copiaB", 11},
-        {"AeB"   , 12},
-        {"umL"   , 13},
-        {"AonB"  , 14},
-        {"AoB"   , 15},
-        {"copiaA", 16}
+        {"nA"    ,  1},// not A
+        {"AoBn"  ,  2},// A and not B
+        {"nAeB"  ,  3},// not A and B
+        {"zeroL" ,  4},// zero
+        {"AeBn"  ,  5},// A and not B
+        {"nB"    ,  6},// not B
+        {"AxB"   ,  7},// A and B
+        {"AenB"  ,  8},// A and not B
+        {"nAoB"  ,  9},// not A or B
+        {"AxBn"  , 10},// A and not B
+        {"copiaB", 11},// copy B
+        {"AeB"   , 12},// A and B
+        {"umL"   , 13},// one
+        {"AonB"  , 14},// A or not B
+        {"AoB"   , 15},// A or B
+        {"copiaA", 16}// copy A
     };
 
 void mode0();
