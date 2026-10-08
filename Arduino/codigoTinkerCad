@@ -1,175 +1,177 @@
 // C++ code
 // https://www.tinkercad.com/things/fXMF9UMKHEZ-ep03?sharecode=1m2xBljF8tT2y-Bz7ad8Bke6FhBQJW9C2Jhx6jZ3l2k
 
-String entrada;
-int pin_f3 = 13;
-int pin_f2 = 12;
-int pin_f1 = 11;
-int pin_f0 = 10;
-String memoria[100];
-int cont = 4;
-bool iniciar;
+String entrada;       // Variável para armazenar temporariamente a leitura da porta serial
+int pin_f3 = 13;      // Define o pino 13 para o bit mais significativo (MSB) do resultado (F3)
+int pin_f2 = 12;      // Define o pino 12 para o bit F2
+int pin_f1 = 11;      // Define o pino 11 para o bit F1
+int pin_f0 = 10;      // Define o pino 10 para o bit menos significativo (LSB) (F0)
+String memoria[100];  // Array que simula a memória do sistema (capacidade de 100 posições)
+int cont = 4;         // Contador que indica onde as próximas instruções serão salvas (começa no índice 4)
+bool iniciar;         // Flag booleana para controlar quando a execução do programa deve começar
 
+// Declaração dos protótipos das funções que serão usadas no código
 void carregarEntradas();
 void printVetor();
 int calcularInstrucao(char x, char y, char w);
 int conversaoCharInt(char c);
 char conversaoIntChar(int i);
 
-
 void setup()
 {
-  memoria[0] = cont;
-  memoria[1] = memoria[2] = memoria[3] = "0";
-  iniciar = false;
+  memoria[0] = cont;  // memoria[0] guarda o "Program Counter" (PC), ou seja, a linha da instrução atual
+  memoria[1] = memoria[2] = memoria[3] = "0"; // Inicializa as posições 1, 2 e 3 com "0" (podem representar registradores de uso geral ou saída)
+  iniciar = false;    // Garante que o programa não inicie automaticamente
 
-  Serial.begin (9600);
-  pinMode(pin_f3, OUTPUT);
-  pinMode(pin_f2, OUTPUT);
-  pinMode(pin_f1, OUTPUT);
-  pinMode(pin_f0, OUTPUT);
+  Serial.begin (9600);    // Inicia a comunicação serial a 9600 bits por segundo
+  pinMode(pin_f3, OUTPUT); // Configura o pino 13 como saída (para um LED)
+  pinMode(pin_f2, OUTPUT); // Configura o pino 12 como saída
+  pinMode(pin_f1, OUTPUT); // Configura o pino 11 como saída
+  pinMode(pin_f0, OUTPUT); // Configura o pino 10 como saída
 }
 
 void loop()
 {
-  if(cont == 4){
-    if(Serial.available() > 0){
-      carregarEntradas();
-      printVetor();
+  if(cont == 4){ // Se o contador está em 4, significa que a memória ainda está vazia e esperando o código
+    if(Serial.available() > 0){ // Verifica se há dados chegando na porta serial
+      carregarEntradas(); // Chama a função para ler tudo da serial e guardar no vetor memoria
+      printVetor();       // Imprime como a memória ficou após o carregamento
 
-      Serial.println("Digite S para iniciar o programa:");
-      while(Serial.available() == 0){
+      Serial.println("Digite S para iniciar o programa:"); // Pede confirmação ao usuário
+      while(Serial.available() == 0){ // Fica preso em um loop infinito esperando o usuário digitar algo
       }
 
-      char confirmacao = Serial.read();
+      char confirmacao = Serial.read(); // Lê o caractere digitado
 
-      if(confirmacao == 'S' || confirmacao == 's'){
-        iniciar = true;
+      if(confirmacao == 'S' || confirmacao == 's'){ // Se for 'S' ou 's', autoriza o início
+        iniciar = true; // Muda a flag para true
         Serial.println("Programa iniciado!");
       }else{
-        return;
+        return; // Se não for 'S', sai do loop() e volta para o começo
       }
     }
-  }else if(iniciar && cont > memoria[0].toInt()){
+  }else if(iniciar && cont > memoria[0].toInt()){ // Fase de Execução: se foi iniciado e ainda há instruções a ler (PC < total de instruções)
     
-    String instrucao = memoria[memoria[0].toInt()];
+    String instrucao = memoria[memoria[0].toInt()]; // Busca a instrução atual na memória (Usando o índice salvo em memoria[0])
     
-    char x = instrucao.charAt(0);
-    char y = instrucao.charAt(1);
-    char w = instrucao.charAt(2);
+    char x = instrucao.charAt(0); // Extrai o 1º caractere (Operando X, ex: '5')
+    char y = instrucao.charAt(1); // Extrai o 2º caractere (Operando Y, ex: 'A')
+    char w = instrucao.charAt(2); // Extrai o 3º caractere (Opcode W, ex: 'E')
     
-    memoria[2] = x;
-    memoria[3] = y;
+    memoria[2] = x; // Salva o operando X no endereço 2 da memória
+    memoria[3] = y; // Salva o operando Y no endereço 3 da memória
     
-    int s = calcularInstrucao(x, y, w);
-    memoria[1] = conversaoIntChar(s & 0x0F);
+    int s = calcularInstrucao(x, y, w); // Manda X, Y e W para a ULA calcular o resultado
+    memoria[1] = conversaoIntChar(s & 0x0F); // Converte o resultado de volta para char (garantindo apenas 4 bits com a máscara 0x0F) e salva em memoria[1]
     
-    printVetor();
+    printVetor(); // Exibe o estado atual da memória após a execução
     
-    digitalWrite(pin_f3,(s >> 3) & 1);
-    digitalWrite(pin_f2,(s >> 2) & 1);
-    digitalWrite(pin_f1,(s >> 1) & 1);
-    digitalWrite(pin_f0,(s >> 0) & 1);
+    // As próximas 4 linhas escrevem o resultado binário nos LEDs fazendo deslocamento de bits (shift right)
+    digitalWrite(pin_f3,(s >> 3) & 1); // Pega o 4º bit e liga/desliga o LED 3
+    digitalWrite(pin_f2,(s >> 2) & 1); // Pega o 3º bit e liga/desliga o LED 2
+    digitalWrite(pin_f1,(s >> 1) & 1); // Pega o 2º bit e liga/desliga o LED 1
+    digitalWrite(pin_f0,(s >> 0) & 1); // Pega o 1º bit (LSB) e liga/desliga o LED 0
     
-    delay(4000);
+    delay(4000); // Aguarda 4 segundos (Clock simulado) para que dê tempo de visualizar os LEDs
     
-    memoria[0] = String(memoria[0].toInt() + 1);
+    memoria[0] = String(memoria[0].toInt() + 1); // Incrementa o "Program Counter" (memoria[0]) para apontar para a próxima instrução
   }
 }
 
 void carregarEntradas(){
-  while(Serial.available() > 0){
-    entrada = Serial.readStringUntil(' ');
-    memoria[cont++] = entrada;
-    delay(1);
+  while(Serial.available() > 0){ // Enquanto houver dados na serial
+    entrada = Serial.readStringUntil(' '); // Lê até encontrar um espaço
+    memoria[cont++] = entrada; // Salva a palavra na memória e incrementa o contador
+    delay(1); // Pequeno atraso para estabilidade da leitura serial
   }
 }
 
 void printVetor(){
-  Serial.print("->|");
-  for(int i = 0; i < cont; i++){
-    Serial.print(memoria[i]);
-    Serial.print("|");
+  Serial.print("->|"); // Formatação de início
+  for(int i = 0; i < cont; i++){ // Itera por todas as posições preenchidas da memória
+    Serial.print(memoria[i]); // Imprime o conteúdo
+    Serial.print("|"); // Separa por pipe
   }
-  Serial.print("\n");
+  Serial.print("\n"); // Pula linha
   delay(1);
 }
   
 int calcularInstrucao(char x, char y, char w){
-  int xInt = conversaoCharInt(x) & 0x0F;
-  int yInt = conversaoCharInt(y) & 0x0F;
-  int sInt;
+  int xInt = conversaoCharInt(x) & 0x0F; // Converte o char X para um número inteiro e aplica máscara de 4 bits (0-15)
+  int yInt = conversaoCharInt(y) & 0x0F; // Converte o char Y para um número inteiro e aplica máscara de 4 bits
+  int sInt; // Variável que guardará a Saída (Result)
 
+  // O switch atua como o decodificador de instruções (Control Unit) baseado no Opcode (W)
   switch(w){
     case '0': // not A
-      sInt = ~xInt;
+      sInt = ~xInt; // Operador bitwise NOT (inverte todos os bits de X)
       break;
-    case '1':// A and not B
-      sInt = ~(xInt | yInt);
+    case '1':// A and not B (A descrição do comentário difere do código: ~(x|y) é NOR, não "A and not B")
+      sInt = ~(xInt | yInt); // Operador bitwise NOR (NOT OR)
       break;
     case '2': //not A and B
-      sInt = ~xInt & yInt;
+      sInt = ~xInt & yInt; // Operador NOT no X AND Y
       break;
     case '3': // zero
-      sInt = 0;
+      sInt = 0; // Zera a saída
       break;
-    case '4': // A and not B
-      sInt = ~(xInt & yInt);
+    case '4': // A and not B (O código implementa NAND: ~(x & y))
+      sInt = ~(xInt & yInt); // Operador NAND
       break;
     case '5': // not B
-      sInt = ~yInt;
+      sInt = ~yInt; // Inverte os bits de Y
       break;
-    case '6': // A and B
-      sInt = (~xInt | yInt) & (xInt | ~yInt);
+    case '6': // A and B (O código implementa XOR, equivalente a (not A or B) AND (A or not B) que é (XNOR invertido). Na verdade, isso simplifica para X XOR Y)
+      sInt = (~xInt | yInt) & (xInt | ~yInt); 
       break;
     case '7': // A and not B
-      sInt = xInt & ~yInt;
+      sInt = xInt & ~yInt; // X AND NOT Y
       break;
     case '8': // not A or B
-      sInt = ~xInt | yInt;
+      sInt = ~xInt | yInt; // NOT X OR Y
       break;
-    case '9':  // A and not B
+    case '9':  // A and not B (Implementa XNOR: (X AND Y) OR (NOT X AND NOT Y))
       sInt = (xInt & yInt) | (~xInt | ~yInt);
       break;
     case 'A': // copy B
-      sInt = yInt;
+      sInt = yInt; // Passa o Y direto para a saída
       break;
     case 'B': // A and B
-      sInt = xInt & yInt;
+      sInt = xInt & yInt; // Operador AND
       break;
     case 'C': // one
-      sInt = 15;
+      sInt = 15; // Liga todos os 4 bits (1111 em binário é 15 em decimal)
       break;
     case 'D': // A or not B
-      sInt = xInt | ~yInt;
+      sInt = xInt | ~yInt; // X OR NOT Y
       break;
     case 'E': // A or B
-      sInt = xInt | yInt;
+      sInt = xInt | yInt; // Operador OR
       break;
     case 'F': // copy A
-      sInt = xInt;
+      sInt = xInt; // Passa X direto para a saída
       break;
   }
 
-  return sInt & 0x0F;
+  return sInt & 0x0F; // Retorna o resultado, mas aplicando uma máscara 0x0F (0000 1111) para garantir que seja estritamente 4 bits. Evita que o bit de sinal de inteiros negativos quebre o código.
 }
 
-int conversaoCharInt(char c){
-  int cInt = (int)c;
-  if(cInt >= 65){
-    cInt -= 55;
-  }else{
-    cInt -= 48;
+int conversaoCharInt(char c){ // Função para converter char em Hex para número inteiro (ex: 'A' vira 10)
+  int cInt = (int)c; // Pega o valor na tabela ASCII do caractere
+  if(cInt >= 65){ // Se for maior ou igual a 65 ('A' até 'F' na tabela ASCII)
+    cInt -= 55; // Subtrai 55. Ex: 'A' é 65. 65 - 55 = 10.
+  }else{ // Se for um número entre '0' e '9' (ASCII 48 a 57)
+    cInt -= 48; // Subtrai 48. Ex: '0' é 48. 48 - 48 = 0.
   }
-  return cInt;
+  return cInt; // Retorna o valor numérico
 }
 
-char conversaoIntChar(int i){
+char conversaoIntChar(int i){ // Função inversa: converte inteiro de 0 a 15 para char ('0'-'9' ou 'A'-'F')
   char c;
-  if(i >= 10){
-    c = 55 + i;
-  }else{
-    c = 48 + i;
+  if(i >= 10){ // Se for de 10 a 15
+    c = 55 + i; // Soma 55. Ex: 10 + 55 = 65 ('A' na tabela ASCII)
+  }else{ // Se for de 0 a 9
+    c = 48 + i; // Soma 48. Ex: 5 + 48 = 53 ('5' na tabela ASCII)
   }
-  return c;
+  return c; // Retorna o caractere
 }
